@@ -1,7 +1,9 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 import config
 from controllers.company_management_controller import CompanyManagementController
+from controllers.company_overview_controller import CompanyOverviewController
 from controllers.company_stock_details_controller import CompanyStockDetailsController
 from controllers.company_summary_controller import CompanySummaryController
 from controllers.financial_metrics_controller import FinancialMetricsController
@@ -10,6 +12,15 @@ from controllers.stock_price_performance_controller import StockPricePerformance
 from controllers.user_controller import UserController
 
 app = FastAPI()
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 @app.get("/users/{user_id}")
 def get_user(user_id: int):
@@ -46,6 +57,11 @@ def get_company_management(company_name: str):
 def get_company_stock_details(company_name: str):
     company_stock_details_controller = CompanyStockDetailsController()
     return company_stock_details_controller.get_company_stock_details(company_name)
+
+@app.get("/company-overview/{company_name}")
+def get_company_overview(company_name: str):
+    company_overview_controller = CompanyOverviewController()
+    return company_overview_controller.get_company_overview(company_name)
 
 @app.get("/")
 def read_root():

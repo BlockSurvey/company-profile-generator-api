@@ -4,7 +4,6 @@ import os
 API_KEY = os.getenv("PPLX_API_KEY")
 BASE_URL = "https://api.perplexity.ai/chat/completions"
 
-
 class CompanySummaryController:
     def __init__(self):
         pass
@@ -37,7 +36,6 @@ class CompanySummaryController:
         else:
             print(f"Error: {response.status_code} - {response.text}")
             return None
-
 
     def get_company_summary(self, company_name: str):
         return self.summarize_company(company_name)

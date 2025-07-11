@@ -1,28 +1,63 @@
 import requests
+from pydantic import BaseModel, Field
 
-def get_stock_symbol_by_name(company_name, api_key):
-    url = f"https://financialmodelingprep.com/api/v3/search"
-    params = {
-        "query": company_name,
-        "limit": 10,
-        "exchange": "NASDAQ",  # You can also try "NYSE", "AMEX", or remove for all
-        "apikey": api_key
+# Replace with your actual Perplexity API key
+API_KEY = ""
+BASE_URL = "https://api.perplexity.ai/chat/completions"
+
+class CompanyOverviewCitations(BaseModel):
+    citation_1: str = Field(alias="1", description="Source link for the first citation")
+    citation_2: str = Field(alias="2", description="Source link for the second citation")
+
+class CompanyOverview(BaseModel):
+    overview: str = Field(description="Overview of the company, General business description (what the company does) Key service offerings Growth drivers (e.g., market expansion, margin acceleration) Strategic focus areas (short, medium, long term) Capital allocation strategies. Apply text formatting.")
+    citations: CompanyOverviewCitations
+
+def summarize_company(company_name: str) -> str:
+
+    schema = CompanyOverview.model_json_schema()
+
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
     }
 
-    response = requests.get(url, params=params)
+    payload = {
+        "model": "sonar-pro", # sonar
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a research assistant that summarizes companies using latest information from the web."
+            },
+            {
+                "role": "user",
+                "content": f"""Company Overview of {company_name}. I need below list of information:
+                    General business description (what the company does)
+                    Key service offerings
+                    Growth drivers (e.g., market expansion, margin acceleration)
+                    Strategic focus areas (short, medium, long term)
+                    Capital allocation strategies.
+                """
+            }
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {"schema": schema}
+        }
+    }
+
+    response = requests.post(BASE_URL, json=payload, headers=headers)
 
     if response.status_code == 200:
-        results = response.json()
-        if results:
-            return results  # List of matching companies with symbols
-        else:
-            return {"error": "No results found."}
+        result = response.json()
+        return result["choices"][0]["message"]["content"]
     else:
-        return {"error": f"Failed to fetch data: {response.status_code}"}
+        print(f"Error: {response.status_code} - {response.text}")
+        return None
 
-# Example usage:
-api_key = "G8p4HTsqv6y47BPVNMVy1f5CVdqJOQ9Z"  # Replace with your actual FMP API key
-company_name = "apple"
-symbols = get_stock_symbol_by_name(company_name, api_key)
-
-print(symbols)
+# Example usage
+if __name__ == "__main__":
+    company = "Tesla"
+    summary = summarize_company(company)
+    if summary:
+        print(f"\n📝 Summary for {company}:\n{summary}")
