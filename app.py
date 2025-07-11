@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 import config
+from controllers.company_management_controller import CompanyManagementController
 from controllers.company_summary_controller import CompanySummaryController
 from controllers.financial_metrics_controller import FinancialMetricsController
 from controllers.share_holdings_structure_controller import ShareHoldingsStructureController
@@ -34,6 +35,11 @@ def get_stock_price_performance(symbol: str):
 def get_company_summary(company_name: str):
     company_summary_controller = CompanySummaryController()
     return company_summary_controller.get_company_summary(company_name)
+
+@app.get("/company-management/{company_name}")
+def get_company_management(company_name: str):
+    company_management_controller = CompanyManagementController()
+    return company_management_controller.get_company_management(company_name)
 
 @app.get("/")
 def read_root():
